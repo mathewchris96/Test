@@ -38,13 +38,11 @@
  */
 ;(function($, window, document, undefined) {
 
-  // Strict Mode
   'use strict';
 
-  // Constants
-  var NAME = 'parallax';
-  var MAGIC_NUMBER = 30;
-  var DEFAULTS = {
+  const NAME = 'parallax';
+  const MAGIC_NUMBER = 30;
+  const DEFAULTS = {
     relativeInput: false,
     clipRelativeInput: false,
     calibrationThreshold: 100,
@@ -66,15 +64,12 @@
 
   function Plugin(element, options) {
 
-    // DOM Context
     this.element = element;
 
-    // Selections
     this.$context = $(element).data('api', this);
     this.$layers = this.$context.find('.layer');
 
-    // Data Extraction
-    var data = {
+    let data = {
       calibrateX: this.$context.data('calibrate-x') || null,
       calibrateY: this.$context.data('calibrate-y') || null,
       invertX: this.$context.data('invert-x') || null,
@@ -89,53 +84,42 @@
       originY: parseFloat(this.$context.data('origin-y')) || null
     };
 
-    // Delete Null Data Values
-    for (var key in data) {
+    for (let key in data) {
       if (data[key] === null) delete data[key];
     }
 
-    // Compose Settings Object
     $.extend(this, DEFAULTS, options, data);
 
-    // States
     this.calibrationTimer = null;
     this.calibrationFlag = true;
     this.enabled = false;
     this.depths = [];
     this.raf = null;
 
-    // Element Bounds
     this.bounds = null;
     this.ex = 0;
     this.ey = 0;
     this.ew = 0;
     this.eh = 0;
 
-    // Element Center
     this.ecx = 0;
     this.ecy = 0;
 
-    // Element Range
     this.erx = 0;
     this.ery = 0;
 
-    // Calibration
     this.cx = 0;
     this.cy = 0;
 
-    // Input
     this.ix = 0;
     this.iy = 0;
 
-    // Motion
     this.mx = 0;
     this.my = 0;
 
-    // Velocity
     this.vx = 0;
     this.vy = 0;
 
-    // Callbacks
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onDeviceOrientation = this.onDeviceOrientation.bind(this);
     this.onOrientationTimer = this.onOrientationTimer.bind(this);
@@ -143,21 +127,20 @@
     this.onAnimationFrame = this.onAnimationFrame.bind(this);
     this.onWindowResize = this.onWindowResize.bind(this);
 
-    // Initialise
     this.initialise();
   }
 
   Plugin.prototype.transformSupport = function(value) {
-    var element = document.createElement('div');
-    var propertySupport = false;
-    var propertyValue = null;
-    var featureSupport = false;
-    var cssProperty = null;
-    var jsProperty = null;
-    for (var i = 0, l = this.vendors.length; i < l; i++) {
+    let element = document.createElement('div');
+    let propertySupport = false;
+    let propertyValue = null;
+    let featureSupport = false;
+    let cssProperty = null;
+    let jsProperty = null;
+    for (let i = 0, l = this.vendors.length; i < l; i++) {
       if (this.vendors[i] !== null) {
-        cssProperty = this.vendors[i][0] + 'transform';
-        jsProperty = this.vendors[i][1] + 'Transform';
+        cssProperty = `${this.vendors[i][0]}transform`;
+        jsProperty = `${this.vendors[i][1]}Transform`;
       } else {
         cssProperty = 'transform';
         jsProperty = 'transform';
@@ -173,9 +156,9 @@
         break;
       case '3D':
         if (propertySupport) {
-          var body = document.body || document.createElement('body');
-          var documentElement = document.documentElement;
-          var documentOverflow = documentElement.style.overflow;
+          let body = document.body || document.createElement('body');
+          let documentElement = document.documentElement;
+          let documentOverflow = documentElement.style.overflow;
           if (!document.body) {
             documentElement.style.overflow = 'hidden';
             documentElement.appendChild(body);
@@ -212,17 +195,14 @@
 
   Plugin.prototype.initialise = function() {
 
-    // Configure Styles
     if (this.$context.css('position') === 'static') {
       this.$context.css({
         position:'relative'
       });
     }
 
-    // Hardware Accelerate Context
     this.accelerate(this.$context);
 
-    // Setup
     this.updateLayers();
     this.updateDimensions();
     this.enable();
@@ -231,11 +211,9 @@
 
   Plugin.prototype.updateLayers = function() {
 
-    // Cache Layer Elements
     this.$layers = this.$context.find('.layer');
     this.depths = [];
 
-    // Configure Layer Styles
     this.$layers.css({
       position:'absolute',
       display:'block',
@@ -246,13 +224,11 @@
       position:'relative'
     });
 
-    // Hardware Accelerate Layers
     this.accelerate(this.$layers);
 
-    // Cache Depths
-    this.$layers.each($.proxy(function(index, element) {
+    this.$layers.each((index, element) => {
       this.depths.push($(element).data('depth') || 0);
-    }, this));
+    });
   };
 
   Plugin.prototype.updateDimensions = function() {
@@ -349,11 +325,11 @@
   };
 
   Plugin.prototype.css = function(element, property, value) {
-    var jsProperty = this.propertyCache[property];
+    let jsProperty = this.propertyCache[property];
     if (!jsProperty) {
-      for (var i = 0, l = this.vendors.length; i < l; i++) {
+      for (let i = 0, l = this.vendors.length; i < l; i++) {
         if (this.vendors[i] !== null) {
-          jsProperty = $.camelCase(this.vendors[i][1] + '-' + property);
+          jsProperty = $.camelCase(`${this.vendors[i][1]}-${property}`);
         } else {
           jsProperty = property;
         }
@@ -367,8 +343,8 @@
   };
 
   Plugin.prototype.accelerate = function($element) {
-    for (var i = 0, l = $element.length; i < l; i++) {
-      var element = $element[i];
+    for (let i = 0, l = $element.length; i < l; i++) {
+      let element = $element[i];
       this.css(element, 'transform', 'translate3d(0,0,0)');
       this.css(element, 'transform-style', 'preserve-3d');
       this.css(element, 'backface-visibility', 'hidden');
@@ -376,12 +352,12 @@
   };
 
   Plugin.prototype.setPosition = function(element, x, y) {
-    x += 'px';
-    y += 'px';
+    x = `${x}px`;
+    y = `${y}px`;
     if (this.transform3DSupport) {
-      this.css(element, 'transform', 'translate3d('+x+','+y+',0)');
+      this.css(element, 'transform', `translate3d(${x},${y},0)`);
     } else if (this.transform2DSupport) {
-      this.css(element, 'transform', 'translate('+x+','+y+')');
+      this.css(element, 'transform', `translate(${x},${y})`);
     } else {
       element.style.left = x;
       element.style.top = y;
@@ -406,8 +382,8 @@
 
   Plugin.prototype.onAnimationFrame = function() {
     this.updateBounds();
-    var dx = this.ix - this.cx;
-    var dy = this.iy - this.cy;
+    let dx = this.ix - this.cx;
+    let dy = this.iy - this.cy;
     if ((Math.abs(dx) > this.calibrationThreshold) || (Math.abs(dy) > this.calibrationThreshold)) {
       this.queueCalibration(0);
     }
@@ -428,11 +404,11 @@
     }
     this.vx += (this.mx - this.vx) * this.frictionX;
     this.vy += (this.my - this.vy) * this.frictionY;
-    for (var i = 0, l = this.$layers.length; i < l; i++) {
-      var depth = this.depths[i];
-      var layer = this.$layers[i];
-      var xOffset = this.vx * depth * (this.invertX ? -1 : 1);
-      var yOffset = this.vy * depth * (this.invertY ? -1 : 1);
+    for (let i = 0, l = this.$layers.length; i < l; i++) {
+      let depth = this.depths[i];
+      let layer = this.$layers[i];
+      let xOffset = this.vx * depth * (this.invertX ? -1 : 1);
+      let yOffset = this.vy * depth * (this.invertY ? -1 : 1);
       this.setPosition(layer, xOffset, yOffset);
     }
     this.raf = requestAnimationFrame(this.onAnimationFrame);
@@ -440,31 +416,25 @@
 
   Plugin.prototype.onDeviceOrientation = function(event) {
 
-    // Validate environment and event properties.
     if (!this.desktop && event.beta !== null && event.gamma !== null) {
 
-      // Set orientation status.
       this.orientationStatus = 1;
 
-      // Extract Rotation
-      var x = (event.beta  || 0) / MAGIC_NUMBER; //  -90 :: 90
-      var y = (event.gamma || 0) / MAGIC_NUMBER; // -180 :: 180
+      let x = (event.beta  || 0) / MAGIC_NUMBER;
+      let y = (event.gamma || 0) / MAGIC_NUMBER;
 
-      // Detect Orientation Change
-      var portrait = window.innerHeight > window.innerWidth;
+      let portrait = window.innerHeight > window.innerWidth;
       if (this.portrait !== portrait) {
         this.portrait = portrait;
         this.calibrationFlag = true;
       }
 
-      // Set Calibration
       if (this.calibrationFlag) {
         this.calibrationFlag = false;
         this.cx = x;
         this.cy = y;
       }
 
-      // Set Input
       this.ix = x;
       this.iy = y;
     }
@@ -472,14 +442,11 @@
 
   Plugin.prototype.onMouseMove = function(event) {
 
-    // Cache mouse coordinates.
-    var clientX = event.clientX;
-    var clientY = event.clientY;
+    let clientX = event.clientX;
+    let clientY = event.clientY;
 
-    // Calculate Mouse Input
     if (!this.orientationSupport && this.relativeInput) {
 
-      // Clip mouse coordinates inside element bounds.
       if (this.clipRelativeInput) {
         clientX = Math.max(clientX, this.ex);
         clientX = Math.min(clientX, this.ex + this.ew);
@@ -487,19 +454,17 @@
         clientY = Math.min(clientY, this.ey + this.eh);
       }
 
-      // Calculate input relative to the element.
       this.ix = (clientX - this.ex - this.ecx) / this.erx;
       this.iy = (clientY - this.ey - this.ecy) / this.ery;
 
     } else {
 
-      // Calculate input relative to the window.
       this.ix = (clientX - this.wcx) / this.wrx;
       this.iy = (clientY - this.wcy) / this.wry;
     }
   };
 
-  var API = {
+  const API = {
     enable: Plugin.prototype.enable,
     disable: Plugin.prototype.disable,
     updateLayers: Plugin.prototype.updateLayers,
@@ -512,10 +477,10 @@
   };
 
   $.fn[NAME] = function (value) {
-    var args = arguments;
+    const args = arguments;
     return this.each(function () {
-      var $this = $(this);
-      var plugin = $this.data(NAME);
+      const $this = $(this);
+      let plugin = $this.data(NAME);
       if (!plugin) {
         plugin = new Plugin(this, value);
         $this.data(NAME, plugin);
@@ -528,37 +493,25 @@
 
 })(window.jQuery || window.Zepto, window, document);
 
-/**
- * Request Animation Frame Polyfill.
- * @author Tino Zijdel
- * @author Paul Irish
- * @see https://gist.github.com/paulirish/1579671
- */
 ;(function() {
 
-  var lastTime = 0;
-  var vendors = ['ms', 'moz', 'webkit', 'o'];
+  let lastTime = 0;
+  const vendors = ['ms', 'moz', 'webkit', 'o'];
 
-  for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-    window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-    window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+  for(let x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+    window.requestAnimationFrame = window[`${vendors[x]}RequestAnimationFrame`];
+    window.cancelAnimationFrame = window[`${vendors[x]}CancelAnimationFrame`] || window[`${vendors[x]}CancelRequestAnimationFrame`];
   }
 
   if (!window.requestAnimationFrame) {
     window.requestAnimationFrame = function(callback, element) {
-      var currTime = new Date().getTime();
-      var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-      var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+      let currTime = new Date().getTime();
+      let timeToCall = Math.max(0, 16 - (currTime - lastTime));
+      let id = window.setTimeout(function() { callback(currTime + timeToCall); },
         timeToCall);
       lastTime = currTime + timeToCall;
       return id;
     };
   }
 
-  if (!window.cancelAnimationFrame) {
-    window.cancelAnimationFrame = function(id) {
-      clearTimeout(id);
-    };
-  }
-
-}());
+  if (!win```
